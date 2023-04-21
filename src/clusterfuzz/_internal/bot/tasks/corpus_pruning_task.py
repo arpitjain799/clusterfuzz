@@ -914,7 +914,7 @@ def choose_cross_pollination_strategy(current_fuzzer_name):
   return (Pollination.RANDOM, None)
 
 
-def execute_task(full_fuzzer_name, job_type):
+def execute_task(full_fuzzer_name, job_type, _):
   """Execute corpus pruning task."""
   fuzz_target = data_handler.get_fuzz_target(full_fuzzer_name)
   task_name = 'corpus_pruning_%s_%s' % (full_fuzzer_name, job_type)

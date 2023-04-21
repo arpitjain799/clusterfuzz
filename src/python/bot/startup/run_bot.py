@@ -16,6 +16,7 @@
 # Before any other imports, we must fix the path. Some libraries might expect
 # to be able to import dependencies directly, but we must store these in
 # subdirectories of common so that they are shared with App Engine.
+print('hoe')
 from clusterfuzz._internal.base import modules
 
 modules.fix_module_search_paths()
@@ -119,6 +120,7 @@ def task_loop():
 
 def main():
   """Prepare the configuration options and start requesting tasks."""
+  print('yo')
   logs.configure('run_bot')
 
   root_directory = environment.get_value('ROOT_DIR')

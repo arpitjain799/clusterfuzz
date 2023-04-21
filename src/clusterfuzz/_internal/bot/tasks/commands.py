@@ -111,16 +111,19 @@ def is_supported_cpu_arch_for_job():
 def update_environment_for_job(environment_string):
   """Process the environment variable string included with a job."""
   # Now parse the job's environment definition.
+  untrusted_env = {}
   environment_values = (
       environment.parse_environment_definition(environment_string))
 
   for key, value in six.iteritems(environment_values):
+    untrusted_env[key] = value
     environment.set_value(key, value)
 
   # If we share the build with another job type, force us to be a custom binary
   # job type.
   if environment.get_value('SHARE_BUILD_WITH_JOB_TYPE'):
     environment.set_value('CUSTOM_BINARY', True)
+    untrusted_environment['key'] = 'True'
 
   # Allow the default FUZZ_TEST_TIMEOUT and MAX_TESTCASES to be overridden on
   # machines that are preempted more often.
@@ -128,16 +131,19 @@ def update_environment_for_job(environment_string):
       'FUZZ_TEST_TIMEOUT_OVERRIDE')
   if fuzz_test_timeout_override:
     environment.set_value('FUZZ_TEST_TIMEOUT', fuzz_test_timeout_override)
+    untrusted_environment['FUZZ_TEST_TIMEOUT'] = fuzz_test_timeout_override
 
   max_testcases_override = environment.get_value('MAX_TESTCASES_OVERRIDE')
   if max_testcases_override:
     environment.set_value('MAX_TESTCASES', max_testcases_override)
+    untrusted_environment['MAX_TESTCASES'] = max_testcases_override
 
   if environment.is_trusted_host():
     environment_values['JOB_NAME'] = environment.get_value('JOB_NAME')
     from clusterfuzz._internal.bot.untrusted_runner import \
         environment as worker_environment
     worker_environment.update_environment(environment_values)
+  return untrusted_env
 
 
 def set_task_payload(func):
@@ -184,7 +190,7 @@ def start_web_server_if_needed():
     logs.log_error('Failed to start web server, skipping.')
 
 
-def run_command(task_name, task_argument, job_name):
+def run_command(task_name, task_argument, job_name, untrusted_environment):
   """Run the command."""
   if task_name not in COMMAND_MAP:
     logs.log_error("Unknown command '%s'" % task_name)
@@ -194,15 +200,16 @@ def run_command(task_name, task_argument, job_name):
 
   # If applicable, ensure this is the only instance of the task running.
   task_state_name = ' '.join([task_name, task_argument, job_name])
-  if should_update_task_status(task_name):
-    if not data_handler.update_task_status(task_state_name,
-                                           data_types.TaskState.STARTED):
-      logs.log('Another instance of "{}" already '
-               'running, exiting.'.format(task_state_name))
-      raise AlreadyRunningError
+  # !!! development needed to rerun analyze if it fails
+  # if should_update_task_status(task_name):
+  #   if not data_handler.update_task_status(task_state_name,
+  #                                          data_types.TaskState.STARTED):
+  #     logs.log('Another instance of "{}" already '
+  #              'running, exiting.'.format(task_state_name))
+  #     raise AlreadyRunningError
 
   try:
-    task_module.execute_task(task_argument, job_name)
+    task_module.execute_task(task_argument, job_name, untrusted_environment)
   except errors.InvalidTestcaseError:
     # It is difficult to try to handle the case where a test case is deleted
     # during processing. Rather than trying to catch by checking every point
@@ -366,7 +373,7 @@ def process_command(task):
       environment_string += additional_variables_for_job
 
     # Update environment for the job.
-    update_environment_for_job(environment_string)
+    untrusted_environment = update_environment_for_job(environment_string)
 
   # Match the cpu architecture with the ones required in the job definition.
   # If they don't match, then bail out and recreate task.
@@ -386,7 +393,7 @@ def process_command(task):
   start_web_server_if_needed()
 
   try:
-    run_command(task_name, task_argument, job_name)
+    run_command(task_name, task_argument, job_name, untrusted_environment)
   finally:
     # Final clean up.
     cleanup_task_state()

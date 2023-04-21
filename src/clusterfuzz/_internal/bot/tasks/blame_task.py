@@ -271,7 +271,7 @@ def _clear_blame_result_and_set_pending_flag(testcase):
   testcase.put()
 
 
-def execute_task(testcase_id, _):
+def execute_task(testcase_id, _, __):
   """Attempt to find the CL introducing the bug associated with testcase_id."""
   # Locate the testcase associated with the id.
   testcase = data_handler.get_testcase_by_id(testcase_id)
