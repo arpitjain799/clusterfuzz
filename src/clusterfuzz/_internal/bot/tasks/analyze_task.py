@@ -266,18 +266,17 @@ class TaskResult:
     self.extras = extras
 
 class UntrustedTestcaseWrapper:
-  def __init__(self, testcase, signed_download_url=None, signed_upload_url=None):
+  def __init__(self, testcase):
     # Everything set here, must be in the list in __setattr__
     self._testcase = testcase
     # !!! How to avoid conflict with Testcase. Unittests?
     self.signed_download_url = signed_download_url
-    self.signed_upload_url = signed_upload_url
 
   def __getattr__(self, attribute):
     return getattr(self._testcase, attribute)
 
   def __setattr__(self, attribute, value):
-    if attribute in ['_testcase', 'signed_download_url', 'signed_upload_url']:
+    if attribute in ['_testcase', 'signed_download_url']:
       # Allow setting and changing _testcase. Stack overflow in __init__
       # otherwise.
       super().__setattr__(attribute, value)
@@ -333,7 +332,8 @@ def preprocess_task(testcase_id, job_type, untrusted_environment):
   #   untrusted_env['CRASH_RETRIES'] = metadata.retries
 
   signed_download_url = setup.get_testcase_download_url(testcase)
-  testcase = UntrustedTestcaseWrapper(testcase, signed_download_url=signed_download_url)
+  testcase.signed_download_url = signed_download_url
+  testcase = UntrustedTestcaseWrapper(testcase)
   return testcase
 
 def postprocess_task(untrusted_result):

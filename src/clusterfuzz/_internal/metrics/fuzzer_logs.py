@@ -103,7 +103,6 @@ def upload_to_logs(bucket_name,
   log_path = 'gs:/' + log_directory + '/' + get_log_relative_path(
       time, file_extension)
 
-  # from remote_pdb import RemotePdb; RemotePdb('127.0.0.1', 4444).set_trace()
   if storage.write_data(contents, log_path):
     logs.log('Uploaded file to logs bucket.', log_path=log_path)
   else:

@@ -123,7 +123,7 @@ def update_environment_for_job(environment_string):
   # job type.
   if environment.get_value('SHARE_BUILD_WITH_JOB_TYPE'):
     environment.set_value('CUSTOM_BINARY', True)
-    untrusted_environment['key'] = 'True'
+    untrusted_environment['CUSTOM_BINARY'] = 'True'
 
   # Allow the default FUZZ_TEST_TIMEOUT and MAX_TESTCASES to be overridden on
   # machines that are preempted more often.

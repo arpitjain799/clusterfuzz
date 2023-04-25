@@ -83,7 +83,7 @@ def _filter_path(path, write=False):
     local_path = storage.FileSystemProvider(local_buckets_path).convert_path(
         path)
 
-  return local_pathb
+  return local_path
 
 
 class GSUtilRunner(object):
