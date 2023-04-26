@@ -752,9 +752,6 @@ class DataBundle(Model):
   # TODO(ochang): Remove.
   source = ndb.StringProperty()
 
-  # If data bundle can be unpacked locally or needs nfs.
-  is_local = ndb.BooleanProperty(default=True)
-
   # Creation timestamp.
   timestamp = ndb.DateTimeProperty()
 
