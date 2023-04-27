@@ -126,7 +126,6 @@ def generate_new_testcase_mutations(corpus_directory,
     generate_new_testcase_mutations_using_ml_rnn(
         corpus_directory, new_testcase_mutations_directory, fuzzer_name,
         generation_timeout)
-    pass
 
   # If new mutations are successfully generated, return true.
   if shell.get_directory_file_count(
